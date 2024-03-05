@@ -58,7 +58,7 @@ app.controller("shopping-cart-ctrl", function ($scope, $http) {
 
         //Xóa sản phẩm khỏi giỏ hàng
         remove(id) {
-            var index = this.items.findIndex(item => item.id == id);
+            var index = this.items.findIndex(item => item.productId == id);
             this.items.splice(index, 1);
             this.saveToLocalStorage();
         },

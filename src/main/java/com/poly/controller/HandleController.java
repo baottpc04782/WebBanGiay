@@ -6,12 +6,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.util.StringUtils;
 
@@ -32,6 +33,9 @@ public class HandleController {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    JavaMailSender javaMailSender;
 
     @GetMapping("/register")
     public String register(Model model) {
@@ -77,10 +81,14 @@ public class HandleController {
 
         if (acc != null) {
             if (email.equals(acc.getEmail())) {
-                int random = ThreadLocalRandom.current().nextInt(0, 9999);
+                int random = ThreadLocalRandom.current().nextInt(1000, 10000);
                 acc.setPassword(String.valueOf(random));
                 accountsDao.save(acc);
-                m.addFlashAttribute("mess", "Password được cập nhật là: " + random);
+
+                // Send email with new password
+                sendPasswordResetEmail(acc.getEmail(), acc.getUsername(), random);
+
+                m.addFlashAttribute("mess", "Password đã được cập nhật và gửi vào email của bạn.");
             } else {
                 m.addFlashAttribute("mess", "Email không trùng khớp");
                 return "redirect:/forgotpass";
@@ -91,6 +99,21 @@ public class HandleController {
         }
 
         return "redirect:/forgotpass";
+    }
+
+    public void sendPasswordResetEmail(String to, String username, int newPassword) {
+        String subject = "Password Reset - MiniShop";
+        String messageText = "Dear " + username + ",\n\n"
+                + "You have requested to reset your password for MiniShop. "
+                + "Your new password is: " + newPassword + "\n\n"
+                + "Thank you for using MiniShop!";
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(messageText);
+
+        javaMailSender.send(message);
     }
 
     @GetMapping("/changepass")
