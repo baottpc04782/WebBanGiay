@@ -39,7 +39,7 @@ public class OrderAdminController {
 	    return "/views/admin/order";
 	}
 
-	// Xử lý cập nhật trạng thái đơn hàng
+	// edit update status order
 	@RequestMapping("/order/saveStatus")
 	public String saveStatusOrder(@RequestParam("id") Integer id, @RequestParam("status") Integer status) {
 	    // Tìm đơn hàng theo ID
